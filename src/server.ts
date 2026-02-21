@@ -355,36 +355,57 @@ export function createServer(): McpServer {
       // Filter to keywords with decent volume (>= 50 total searches)
       const candidates = relatedKeywords
         .filter((kw) => kw.monthlyPcQcCnt + kw.monthlyMobileQcCnt >= 50)
-        .slice(0, 30); // Check up to 30 for trends
+        .slice(0, 15); // Check up to 15 for trends
 
-      // Fetch trend data for each candidate in parallel
-      const trendPromises = candidates.map(async (kw) => {
-        try {
-          const trendData = await getTrend(kw.relKeyword);
-          const trendResult = calcTrendScore(trendData);
-          return {
-            keyword: kw.relKeyword,
-            totalSearches: kw.monthlyPcQcCnt + kw.monthlyMobileQcCnt,
-            pcSearches: kw.monthlyPcQcCnt,
-            mobileSearches: kw.monthlyMobileQcCnt,
-            compIdx: kw.compIdx,
-            trendDirection: trendResult.direction,
-            trendSlope: Math.round(trendResult.slope * 100) / 100,
-            trendScore: Math.round(trendResult.score * 10) / 10,
-            recentTrend: trendData.results.slice(-3).map((p) => ({
-              period: p.period,
-              ratio: p.ratio,
-            })),
-          };
-        } catch {
-          return null;
+      // Fetch trend data in batches of 5 to avoid DataLab rate limits
+      type TrendResult = {
+        keyword: string;
+        totalSearches: number;
+        pcSearches: number;
+        mobileSearches: number;
+        compIdx: string;
+        trendDirection: "rising" | "stable" | "declining";
+        trendSlope: number;
+        trendScore: number;
+        recentTrend: { period: string; ratio: number }[];
+      };
+
+      const allResults: (TrendResult | null)[] = [];
+      const BATCH_SIZE = 5;
+
+      for (let i = 0; i < candidates.length; i += BATCH_SIZE) {
+        const batch = candidates.slice(i, i + BATCH_SIZE);
+        const batchResults = await Promise.allSettled(
+          batch.map(async (kw) => {
+            try {
+              const trendData = await getTrend(kw.relKeyword);
+              const trendResult = calcTrendScore(trendData);
+              return {
+                keyword: kw.relKeyword,
+                totalSearches: kw.monthlyPcQcCnt + kw.monthlyMobileQcCnt,
+                pcSearches: kw.monthlyPcQcCnt,
+                mobileSearches: kw.monthlyMobileQcCnt,
+                compIdx: kw.compIdx,
+                trendDirection: trendResult.direction,
+                trendSlope: Math.round(trendResult.slope * 100) / 100,
+                trendScore: Math.round(trendResult.score * 10) / 10,
+                recentTrend: trendData.results.slice(-3).map((p) => ({
+                  period: p.period,
+                  ratio: p.ratio,
+                })),
+              } satisfies TrendResult;
+            } catch {
+              return null;
+            }
+          })
+        );
+        for (const r of batchResults) {
+          allResults.push(r.status === "fulfilled" ? r.value : null);
         }
-      });
+      }
 
-      const trendResults = await Promise.allSettled(trendPromises);
-      const risingKeywords = trendResults
-        .filter((r) => r.status === "fulfilled" && r.value !== null && r.value.trendDirection === "rising")
-        .map((r) => (r as PromiseFulfilledResult<NonNullable<Awaited<(typeof trendPromises)[number]>>>).value)
+      const risingKeywords = allResults
+        .filter((r): r is TrendResult => r !== null && r.trendDirection === "rising")
         .sort((a, b) => b.trendSlope - a.trendSlope)
         .slice(0, limit);
 
