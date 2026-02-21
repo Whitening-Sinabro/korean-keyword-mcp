@@ -1,6 +1,6 @@
 {
   "name": "korean-keyword-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for Korean keyword analysis using Naver SearchAd API. Niche scoring, search volume, trend analysis, blog competition, and batch comparison.",
   "type": "module",
   "main": "dist/index.js",
