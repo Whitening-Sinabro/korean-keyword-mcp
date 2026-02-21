@@ -1,0 +1,53 @@
+{
+  "name": "korean-keyword-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Korean keyword analysis using Naver SearchAd API. Niche scoring, search volume, trend analysis, blog competition, and batch comparison.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "korean-keyword-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README.ko.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "korean",
+    "keyword",
+    "seo",
+    "naver",
+    "searchad",
+    "niche",
+    "keyword-research",
+    "blog",
+    "trend"
+  ],
+  "author": "codemeant",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Whitening-Sinabro/korean-keyword-mcp"
+  },
+  "homepage": "https://github.com/Whitening-Sinabro/korean-keyword-mcp#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}
