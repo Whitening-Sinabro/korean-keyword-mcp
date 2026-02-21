@@ -1,0 +1,31 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - NAVER_SEARCHAD_CUSTOMER_ID
+      - NAVER_SEARCHAD_API_KEY
+      - NAVER_SEARCHAD_SECRET_KEY
+      - NAVER_CLIENT_ID
+      - NAVER_CLIENT_SECRET
+    properties:
+      NAVER_SEARCHAD_CUSTOMER_ID:
+        type: string
+        description: "Naver SearchAd API customer ID"
+      NAVER_SEARCHAD_API_KEY:
+        type: string
+        description: "Naver SearchAd API key"
+      NAVER_SEARCHAD_SECRET_KEY:
+        type: string
+        description: "Naver SearchAd API secret key"
+      NAVER_CLIENT_ID:
+        type: string
+        description: "Naver Developer API client ID"
+      NAVER_CLIENT_SECRET:
+        type: string
+        description: "Naver Developer API client secret"
+  commandFunction:
+    |-
+    (config) => ({ command: 'npx', args: ['-y', 'korean-keyword-mcp'], env: { NAVER_SEARCHAD_CUSTOMER_ID: config.NAVER_SEARCHAD_CUSTOMER_ID, NAVER_SEARCHAD_API_KEY: config.NAVER_SEARCHAD_API_KEY, NAVER_SEARCHAD_SECRET_KEY: config.NAVER_SEARCHAD_SECRET_KEY, NAVER_CLIENT_ID: config.NAVER_CLIENT_ID, NAVER_CLIENT_SECRET: config.NAVER_CLIENT_SECRET } })
